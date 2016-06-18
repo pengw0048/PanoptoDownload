@@ -214,7 +214,7 @@ namespace PanoptoDownload
                         worklist.Add(new DownloadTask() { SavePath = file, URL = stream.StreamHttpUrl, DisplayName=sessions[i].SessionName+"|"+ tag});
                     }
                 }
-                threadn = InputNumber(1, 2, "Enter number of threads (1-2): ");
+                threadn = InputNumber(1, 2, "Enter number of threads (1-2): "); // They seem to only allow 2 download threads.
                 for (int i = 0; i < threadn; i++)
                 {
                     var thread = new Thread(new ThreadStart(go));
@@ -250,7 +250,44 @@ namespace PanoptoDownload
                 Console.WriteLine("Check out download.sh in the program folder.");
             }else if (task == 3)
             {
-
+                for (int i = 0; i < sessions.Count; i++)
+                {
+                    var folder1 = safepath(sessions[i].FolderName);
+                    var url = "https://scs.hosted.panopto.com/Panopto/Podcast/Embed/" + sessions[i].SessionID + ".mp4";
+                    try { Directory.CreateDirectory(folder1); } catch (Exception) { }
+                    var file = folder1 + Path.DirectorySeparatorChar + safepath(sessions[i].SessionName) + ".mp4";
+                    worklist.Add(new DownloadTask() { SavePath = file, URL = url, DisplayName = sessions[i].SessionName });
+                }
+                threadn = InputNumber(1, 2, "Enter number of threads (1-2): "); // They seem to only allow 2 download threads.
+                for (int i = 0; i < threadn; i++)
+                {
+                    var thread = new Thread(new ThreadStart(go));
+                    thread.Name = "" + (i + 1);
+                    thread.Start();
+                }
+                lock (threadlock)
+                {
+                    while (finish != threadn)
+                    {
+                        Monitor.Wait(threadlock);
+                    }
+                }
+                Console.WriteLine("All complete.");
+            }else if (task == 4)
+            {
+                using (var sw = new StreamWriter("download.sh", false, Encoding.UTF8))
+                {
+                    sw.WriteLine("#!/bin/sh");
+                    for (int i = 0; i < sessions.Count; i++)
+                    {
+                        var folder1 = safepath(sessions[i].FolderName);
+                        sw.WriteLine("mkdir \"" + folder1 + "\"");
+                        var url = "https://scs.hosted.panopto.com/Panopto/Podcast/Embed/" + sessions[i].SessionID + ".mp4";
+                        var file = folder1 + Path.DirectorySeparatorChar + safepath(sessions[i].SessionName) + ".mp4";
+                        sw.WriteLine("wget -c -O \"" + file + "\" \"" + url + "\"");
+                    }
+                }
+                Console.WriteLine("Check out download.sh in the program folder.");
             }
         }
         static string findext(string s)
