@@ -196,8 +196,8 @@ namespace PanoptoDownload
                     }
             }
             Console.WriteLine();
-            Console.WriteLine("I have info of all videos.\nWhat now?\n1.Just grab all (mp4) videos for me.\n2.Generate a linux script (using wget) for 1.\n3....");
-            int task = InputNumber(1, 3);
+            Console.WriteLine("I have info of all videos.\nWhat now?\n1.Just grab all (mp4) videos for me.\n2.Generate a linux script (using wget) for 1.\n3.Get mp4 videos they use on mobile devices.\n4.Generate a linux script (using wget) for 3.");
+            int task = InputNumber(1, 4);
             if (task == 1)
             {
                 for (int i = 0; i < sessions.Count; i++)
@@ -229,6 +229,28 @@ namespace PanoptoDownload
                     }
                 }
                 Console.WriteLine("All complete.");
+            }else if (task == 2)
+            {
+                using (var sw = new StreamWriter("download.sh", false, Encoding.UTF8)) {
+                    sw.WriteLine("#!/bin/sh");
+                    for (int i = 0; i < sessions.Count; i++)
+                    {
+                        var folder1 = safepath(sessions[i].FolderName);
+                        var folder2 = folder1 + Path.DirectorySeparatorChar + safepath(sessions[i].SessionName);
+                        sw.WriteLine("mkdir -p \"" + folder2 + "\"");
+                        int j = 0;
+                        foreach (var stream in deliveries[i].Delivery.Streams)
+                        {
+                            var tag = (stream.Tag == null ? j + "" : stream.Tag);
+                            var file = folder2 + Path.DirectorySeparatorChar + tag + "." + findext(stream.StreamHttpUrl);
+                            sw.WriteLine("wget -c -O \"" + file + "\" \"" + stream.StreamHttpUrl + "\"");
+                        }
+                    }
+                }
+                Console.WriteLine("Check out download.sh in the program folder.");
+            }else if (task == 3)
+            {
+
             }
         }
         static string findext(string s)
