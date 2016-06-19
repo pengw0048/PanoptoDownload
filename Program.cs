@@ -236,13 +236,13 @@ namespace PanoptoDownload
                     for (int i = 0; i < sessions.Count; i++)
                     {
                         var folder1 = safepath(sessions[i].FolderName);
-                        var folder2 = folder1 + Path.DirectorySeparatorChar + safepath(sessions[i].SessionName);
+                        var folder2 = folder1 + "/" + safepath(sessions[i].SessionName);
                         sw.WriteLine("mkdir -p \"" + folder2 + "\"");
                         int j = 0;
                         foreach (var stream in deliveries[i].Delivery.Streams)
                         {
                             var tag = (stream.Tag == null ? j + "" : stream.Tag);
-                            var file = folder2 + Path.DirectorySeparatorChar + tag + "." + findext(stream.StreamHttpUrl);
+                            var file = folder2 + "/" + tag + "." + findext(stream.StreamHttpUrl);
                             sw.WriteLine("wget -c -O \"" + file + "\" \"" + stream.StreamHttpUrl + "\"");
                         }
                     }
@@ -283,7 +283,7 @@ namespace PanoptoDownload
                         var folder1 = safepath(sessions[i].FolderName);
                         sw.WriteLine("mkdir \"" + folder1 + "\"");
                         var url = "https://scs.hosted.panopto.com/Panopto/Podcast/Embed/" + sessions[i].SessionID + ".mp4";
-                        var file = folder1 + Path.DirectorySeparatorChar + safepath(sessions[i].SessionName) + ".mp4";
+                        var file = folder1 + "/" + safepath(sessions[i].SessionName) + ".mp4";
                         sw.WriteLine("wget -c -O \"" + file + "\" \"" + url + "\"");
                     }
                 }
